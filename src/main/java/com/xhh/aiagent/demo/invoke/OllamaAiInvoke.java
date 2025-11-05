@@ -8,15 +8,15 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 // 取消注释即可在 SpringBoot 项目启动时执行
-//@Component
-public class SpringAiAiInvoke implements CommandLineRunner {
+@Component
+public class OllamaAiInvoke implements CommandLineRunner {
 
     @Resource
-    private ChatModel dashscopeChatModel;
+    private ChatModel ollamaChatModel;
 
     @Override
     public void run(String... args) throws Exception {
-        AssistantMessage output = dashscopeChatModel.call(new Prompt("你好，我是蒋腾进"))
+        AssistantMessage output = ollamaChatModel.call(new Prompt("你好，我是蒋腾进"))
                 .getResult()
                 .getOutput();
         System.out.println(output.getText());
