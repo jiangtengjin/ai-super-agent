@@ -6,6 +6,7 @@ target/
 
 ### STS ###
 application-local.yml
+tmp
 
 ### STS ###
 .apt_generated

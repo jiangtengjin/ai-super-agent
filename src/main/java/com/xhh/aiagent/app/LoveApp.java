@@ -1,10 +1,10 @@
 package com.xhh.aiagent.app;
 
 import com.xhh.aiagent.advisor.CustomLoggerAdvisor;
+import com.xhh.aiagent.chatmemory.FileBasedChatMemory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.stereotype.Component;
 
@@ -35,8 +35,10 @@ public class LoveApp {
      * @param dashscopeChatModel    指定大模型
      */
     public LoveApp(ChatModel dashscopeChatModel) {
+        String fileDir = System.getProperty("user.dir") + "/tmp/chat_memory";
+        FileBasedChatMemory chatMemory = new FileBasedChatMemory(fileDir);
         // 初始化基于内存的对话记忆
-        InMemoryChatMemory chatMemory = new InMemoryChatMemory();
+//        InMemoryChatMemory chatMemory = new InMemoryChatMemory();
         chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultSystem(SYSTEM_PROMPT)
                 .defaultAdvisors(
