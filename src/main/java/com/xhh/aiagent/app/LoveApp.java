@@ -1,5 +1,6 @@
 package com.xhh.aiagent.app;
 
+import com.xhh.aiagent.advisor.CustomLoggerAdvisor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -29,7 +30,13 @@ public class LoveApp {
         InMemoryChatMemory chatMemory = new InMemoryChatMemory();
         chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultSystem(SYSTEM_PROMPT)
-                .defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory))
+                .defaultAdvisors(
+                        new MessageChatMemoryAdvisor(chatMemory),
+                        // 自定义日志 Advisor，可按需开启
+                        new CustomLoggerAdvisor()
+                        // 自定义 R2 Advisor，可按需开启
+//                        , new ReReadAdvisor()
+                )
                 .build();
     }
 
