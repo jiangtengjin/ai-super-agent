@@ -1,9 +1,26 @@
 spring:
   application:
     name: ai-agent
+  # mysql
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.179.127:3306/ai_agent
+    username: root
+    password: 123
   profiles:
     active: local
 
+# mybatis-plus ????
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+    # ??????????
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      logic-delete-field: isDelete # ?????????(isDelete????????)
+      logic-delete-value: 1 # ?????????????? 1
+      logic-not-delete-value: 0 # ?????????????? 0
 server:
   port: 8123
   servlet:

@@ -2,7 +2,7 @@ package com.xhh.aiagent.app;
 
 import com.xhh.aiagent.advisor.CustomLoggerAdvisor;
 import com.xhh.aiagent.advisor.UserMessageCheckAdvisor;
-import com.xhh.aiagent.chatmemory.FileBasedChatMemory;
+import com.xhh.aiagent.chatmemory.InDBChatMemory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -41,20 +41,14 @@ public class LoveApp {
      *
      * @param dashscopeChatModel    指定大模型
      */
-    public LoveApp(ChatModel dashscopeChatModel) {
-        // 初始化基于文件的对话记忆
-        String fileDir = System.getProperty("user.dir") + "/tmp/chat_memory";
-        FileBasedChatMemory chatMemory = new FileBasedChatMemory(fileDir);
+    public LoveApp(ChatModel dashscopeChatModel, InDBChatMemory inDBChatMemory) {
         chatClient = ChatClient.builder(dashscopeChatModel)
-//                .defaultSystem(systemPromptResource)
                 .defaultAdvisors(
-                        new MessageChatMemoryAdvisor(chatMemory),
+                        new MessageChatMemoryAdvisor(inDBChatMemory),
                         // 自定义日志 Advisor，可按需开启
                         new CustomLoggerAdvisor(),
                         // 敏感词校验
                         new UserMessageCheckAdvisor()
-                        // 自定义 R2 Advisor，可按需开启
-//                        , new ReReadAdvisor()
                 )
                 .build();
     }
