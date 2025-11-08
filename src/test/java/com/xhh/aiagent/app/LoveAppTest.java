@@ -14,19 +14,27 @@ class LoveAppTest {
     private LoveApp loveApp;
 
     @Test
+    void testChatWithReport() {
+        String chatId = UUID.randomUUID().toString();
+        String message = "你好，我是蒋腾进，我想让另一半更爱我，但是不知道怎么做";
+        LoveApp.LoveReport report = loveApp.doChat(message, chatId);
+        Assertions.assertNotNull(report);
+    }
+
+    @Test
     void testChat() {
         String chatId = UUID.randomUUID().toString();
         // 第一轮
         String message = "你好，我是蒋腾进";
-        String answer = loveApp.doChat(message, chatId);
-        Assertions.assertNotNull(answer);
+        LoveApp.LoveReport report = loveApp.doChat(message, chatId);
+        Assertions.assertNotNull(report);
         // 第二轮
         message = "什么是健康的爱情关系";
-        answer = loveApp.doChat(message, chatId);
-        Assertions.assertNotNull(answer);
+        report = loveApp.doChat(message, chatId);
+        Assertions.assertNotNull(report);
         // 第三轮
         message = "我应该怎么做";
-        answer = loveApp.doChat(message, chatId);
-        Assertions.assertNotNull(answer);
+        report = loveApp.doChat(message, chatId);
+        Assertions.assertNotNull(report);
     }
 }
