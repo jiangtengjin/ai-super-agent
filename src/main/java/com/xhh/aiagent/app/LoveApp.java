@@ -6,10 +6,9 @@ import com.xhh.aiagent.chatmemory.InDBChatMemory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -78,7 +77,7 @@ public class LoveApp {
     }
 
     @jakarta.annotation.Resource
-    private VectorStore loveAppVectorStore;
+    private Advisor loveAppRagCloudAdvisor;
 
     /**
      * 对话（使用 RAG 检索知识增强）
@@ -95,7 +94,8 @@ public class LoveApp {
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
                 .advisors(new CustomLoggerAdvisor())
-                .advisors(new QuestionAnswerAdvisor(loveAppVectorStore))
+                // 应用检索知识增强（云知识库服务）
+                .advisors(loveAppRagCloudAdvisor)
                 .call()
                 .chatResponse();
         String result = response.getResult().getOutput().getText();

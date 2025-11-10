@@ -31,10 +31,6 @@ public class UserMessageCheckAdvisor implements CallAroundAdvisor, StreamAroundA
     );
 
     private void check(String userMessage) {
-        // 检查输入长度
-        ThrowUtils.throwIf(userMessage.length() > 1000,
-                ErrorCode.PARAMS_ERROR, "输入内容过长，请控制在1000字以内");
-
         // 检查是否为空
         ThrowUtils.throwIf(userMessage.trim().isEmpty(),
                 ErrorCode.PARAMS_ERROR, "输入内容不能为空");
