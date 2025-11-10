@@ -6,7 +6,10 @@ import com.xhh.aiagent.chatmemory.InDBChatMemory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -54,7 +57,7 @@ public class LoveApp {
     }
 
     /**
-     * 对话
+     * 对话（结构化输出）
      *
      * @param message   用户提示词
      * @param chatId    对话 id，用于隔离每个用户的对话
@@ -73,4 +76,33 @@ public class LoveApp {
         log.info("report: {}", report);
         return report;
     }
+
+    @jakarta.annotation.Resource
+    private VectorStore loveAppVectorStore;
+
+    /**
+     * 对话（使用 RAG 检索知识增强）
+     *
+     * @param message   用户提示词
+     * @param chatId    对话 id，用于隔离每个用户的对话
+     * @return          AI 的返回结果
+     */
+    public String doChatWithRag (String message, String chatId) {
+        ChatResponse response = chatClient.prompt()
+                // 系统提示词
+                .system(systemPromptResource)
+                .user(message)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+                .advisors(new CustomLoggerAdvisor())
+                .advisors(new QuestionAnswerAdvisor(loveAppVectorStore))
+                .call()
+                .chatResponse();
+        String result = response.getResult().getOutput().getText();
+        log.info("result: {}", result);
+        return result;
+    }
+
+
+
 }

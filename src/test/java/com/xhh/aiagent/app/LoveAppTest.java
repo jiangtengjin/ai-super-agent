@@ -14,6 +14,14 @@ class LoveAppTest {
     private LoveApp loveApp;
 
     @Test
+    void testChatWithRag() {
+        String chatId = UUID.randomUUID().toString();
+        String message = "我在恋爱中总是患得患失";
+        String response = loveApp.doChatWithRag(message, chatId);
+        Assertions.assertNotNull(response);
+    }
+
+    @Test
     void testChatWithReport() {
         String chatId = UUID.randomUUID().toString();
         String message = "什么是舔狗";
