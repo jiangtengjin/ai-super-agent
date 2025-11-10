@@ -16,7 +16,7 @@ class LoveAppTest {
     @Test
     void testChatWithRag() {
         String chatId = UUID.randomUUID().toString();
-        String message = "我在恋爱中总是患得患失";
+        String message = "我今年25岁，想找一个喜欢徒步，性格温柔，年龄和我相当的女朋友，可以帮我推荐一下吗";
         String response = loveApp.doChatWithRag(message, chatId);
         Assertions.assertNotNull(response);
     }
