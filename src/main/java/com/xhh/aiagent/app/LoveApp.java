@@ -79,6 +79,9 @@ public class LoveApp {
     @jakarta.annotation.Resource
     private Advisor loveAppRagCloudAdvisor;
 
+//    @jakarta.annotation.Resource
+//    private VectorStore pgVectorVectorStore;
+
     /**
      * 对话（使用 RAG 检索知识增强）
      *
@@ -96,6 +99,8 @@ public class LoveApp {
                 .advisors(new CustomLoggerAdvisor())
                 // 应用检索知识增强（云知识库服务）
                 .advisors(loveAppRagCloudAdvisor)
+                // 应用检索知识增强（向量数据库）
+//                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
                 .call()
                 .chatResponse();
         String result = response.getResult().getOutput().getText();
