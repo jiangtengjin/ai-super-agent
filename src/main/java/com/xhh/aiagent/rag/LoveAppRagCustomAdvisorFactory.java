@@ -28,6 +28,9 @@ public class LoveAppRagCustomAdvisorFactory {
                 .build();
         return RetrievalAugmentationAdvisor.builder()
                 .documentRetriever(documentRetriever)
+                // 配置上下文查询增强器，当检索的文档是空时，会使用配置的提示词模板
+                .queryAugmenter(LoveAppContextualQueryAugmenterFactory
+                        .createContextualQueryAugmenter())
                 .build();
     }
 
