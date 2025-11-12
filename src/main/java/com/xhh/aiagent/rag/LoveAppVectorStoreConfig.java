@@ -10,11 +10,17 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
+/**
+ * 基于本地的 rag 知识库
+ */
 @Configuration
 public class LoveAppVectorStoreConfig {
 
     @Resource
     private LoveAppDocumentLoader loveAppDocumentLoader;
+
+    @Resource
+    private MyTokenTextSplitter myTokenTextSplitter;
 
     /**
      * 初始化向量数据库并保存文档
@@ -27,7 +33,10 @@ public class LoveAppVectorStoreConfig {
         SimpleVectorStore simpleVectorStore = SimpleVectorStore.builder(dashscopeEmbeddingModel).build();
         // 加载文档
         List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
-        simpleVectorStore.doAdd(documents);
+        // 文档切分
+        List<Document> splitDocuments = myTokenTextSplitter.splitCustomized(documents);
+        // 写入向量数据库
+        simpleVectorStore.doAdd(splitDocuments);
         return simpleVectorStore;
     }
 

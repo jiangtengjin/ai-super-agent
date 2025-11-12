@@ -6,9 +6,11 @@ import com.xhh.aiagent.chatmemory.InDBChatMemory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -79,6 +81,9 @@ public class LoveApp {
     @jakarta.annotation.Resource
     private Advisor loveAppRagCloudAdvisor;
 
+    @jakarta.annotation.Resource
+    private VectorStore loveAppVectorStore;
+
 //    @jakarta.annotation.Resource
 //    private VectorStore pgVectorVectorStore;
 
@@ -98,7 +103,9 @@ public class LoveApp {
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
                 .advisors(new CustomLoggerAdvisor())
                 // 应用检索知识增强（云知识库服务）
-                .advisors(loveAppRagCloudAdvisor)
+//                .advisors(loveAppRagCloudAdvisor)
+                // 应用检索知识增强（本地知识库服务）
+                .advisors(new QuestionAnswerAdvisor(loveAppVectorStore))
                 // 应用检索知识增强（向量数据库）
 //                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
                 .call()
@@ -107,7 +114,6 @@ public class LoveApp {
         log.info("result: {}", result);
         return result;
     }
-
 
 
 }

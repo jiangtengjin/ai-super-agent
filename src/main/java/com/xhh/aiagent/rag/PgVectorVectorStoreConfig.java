@@ -17,7 +17,7 @@ import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgIndexT
 /**
  * 初始化 PgVector
  */
-@Configuration
+//@Configuration
 public class PgVectorVectorStoreConfig {
 
     @Resource
