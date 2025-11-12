@@ -19,8 +19,13 @@ public class LoveAppVectorStoreConfig {
     @Resource
     private LoveAppDocumentLoader loveAppDocumentLoader;
 
+    // 文档分词器
+//    @Resource
+//    private MyTokenTextSplitter myTokenTextSplitter;
+
+    // 关键词增强器
     @Resource
-    private MyTokenTextSplitter myTokenTextSplitter;
+    private MyKeywordEnricher myKeywordEnricher;
 
     /**
      * 初始化向量数据库并保存文档
@@ -34,9 +39,11 @@ public class LoveAppVectorStoreConfig {
         // 加载文档
         List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
         // 文档切分
-        List<Document> splitDocuments = myTokenTextSplitter.splitCustomized(documents);
+//        List<Document> splitDocuments = myTokenTextSplitter.splitCustomized(documents);
+        // 自动补充关键词元信息
+        List<Document> enRichDocuments = myKeywordEnricher.enrichDocuments(documents);
         // 写入向量数据库
-        simpleVectorStore.doAdd(splitDocuments);
+        simpleVectorStore.doAdd(enRichDocuments);
         return simpleVectorStore;
     }
 

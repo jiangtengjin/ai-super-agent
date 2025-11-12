@@ -34,12 +34,17 @@ public class LoveAppDocumentLoader {
         try {
             Resource[] resources = resourcePatternResolver.getResources("classpath:document/love/*.md");
             for (Resource resource : resources) {
+                // 源文件名
                 String filename = resource.getFilename();
+                int length = filename.length();
+                // 以文件名的状态作为标签
+                String status = filename.substring(length - 6, length - 4);
                 MarkdownDocumentReaderConfig config = MarkdownDocumentReaderConfig.builder()
                         .withHorizontalRuleCreateDocument(false) // 是否以分割线创建文档
                         .withIncludeCodeBlock(false) // 是否读取代码块
                         .withIncludeBlockquote(false) // 是否读取引用块
                         .withAdditionalMetadata("filename", filename) // 添加文档元信息
+                        .withAdditionalMetadata("status", status) // 添加文档元信息
                         .build();
                 MarkdownDocumentReader reader = new MarkdownDocumentReader(resource, config);
                 documents.addAll(reader.get());
