@@ -3,6 +3,7 @@ package com.xhh.aiagent.app;
 import com.xhh.aiagent.advisor.CustomLoggerAdvisor;
 import com.xhh.aiagent.advisor.UserMessageCheckAdvisor;
 import com.xhh.aiagent.chatmemory.InDBChatMemory;
+import com.xhh.aiagent.rag.MyQueryRewriter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -84,6 +85,9 @@ public class LoveApp {
     @jakarta.annotation.Resource
     private VectorStore loveAppVectorStore;
 
+    @jakarta.annotation.Resource
+    private MyQueryRewriter myQueryRewriter;
+
 //    @jakarta.annotation.Resource
 //    private VectorStore pgVectorVectorStore;
 
@@ -95,10 +99,12 @@ public class LoveApp {
      * @return          AI 的返回结果
      */
     public String doChatWithRag (String message, String chatId) {
+        // 重写用户提示词
+        String rewriteMsg = myQueryRewriter.rewrite(message);
         ChatResponse response = chatClient.prompt()
                 // 系统提示词
                 .system(systemPromptResource)
-                .user(message)
+                .user(rewriteMsg)
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
                 .advisors(new CustomLoggerAdvisor())
