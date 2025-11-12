@@ -3,11 +3,11 @@ package com.xhh.aiagent.app;
 import com.xhh.aiagent.advisor.CustomLoggerAdvisor;
 import com.xhh.aiagent.advisor.UserMessageCheckAdvisor;
 import com.xhh.aiagent.chatmemory.InDBChatMemory;
+import com.xhh.aiagent.rag.LoveAppRagCustomAdvisorFactory;
 import com.xhh.aiagent.rag.MyQueryRewriter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -100,18 +100,20 @@ public class LoveApp {
      */
     public String doChatWithRag (String message, String chatId) {
         // 重写用户提示词
-        String rewriteMsg = myQueryRewriter.rewrite(message);
+//        String rewriteMsg = myQueryRewriter.rewrite(message);
         ChatResponse response = chatClient.prompt()
                 // 系统提示词
                 .system(systemPromptResource)
-                .user(rewriteMsg)
+                .user(message)
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
                 .advisors(new CustomLoggerAdvisor())
                 // 应用检索知识增强（云知识库服务）
 //                .advisors(loveAppRagCloudAdvisor)
                 // 应用检索知识增强（本地知识库服务）
-                .advisors(new QuestionAnswerAdvisor(loveAppVectorStore))
+//                .advisors(new QuestionAnswerAdvisor(loveAppVectorStore))
+                // 使用工厂类创建支持过滤的 advisor
+                .advisors(LoveAppRagCustomAdvisorFactory.createCustomAdvisor(loveAppVectorStore, "单身"))
                 // 应用检索知识增强（向量数据库）
 //                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
                 .call()
