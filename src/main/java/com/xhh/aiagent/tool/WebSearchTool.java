@@ -38,7 +38,12 @@ public class WebSearchTool {
             JSONObject jsonObject = JSONUtil.parseObj(response);
             // 提取 organic_results
             JSONArray organicResults = jsonObject.getJSONArray(WebSearchConstant.ORGANIC_RESULTS);
-            List<Object> objects = organicResults.subList(0, 3);
+            // 如果搜索到的结果数 > 5，则只取前5个
+            int end = organicResults.size();
+            if (organicResults.size() > 5) {
+                end = 5;
+            }
+            List<Object> objects = organicResults.subList(0, end);
             // 拼接搜索结果
             String result = objects.stream().map(obj -> {
                 JSONObject tmpJSONObj = (JSONObject) obj;

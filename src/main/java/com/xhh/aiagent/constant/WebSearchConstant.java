@@ -18,7 +18,7 @@ public interface WebSearchConstant {
     /**
      * 搜索引擎（value）
      */
-    String PARAM_ENGINE_VALUE = "baidu";
+    String PARAM_ENGINE_VALUE = "bing";
 
     /**
      * 搜索关键字
