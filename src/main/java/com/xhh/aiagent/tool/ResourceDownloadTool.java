@@ -13,9 +13,9 @@ import java.io.File;
  */
 public class ResourceDownloadTool {
 
-    @Tool(description = "从 url 下载资源")
-    public String doDownload(@ToolParam(description = "下载资源的 url 地址") String url,
-                             @ToolParam(description = "资源的文件名称") String fileName){
+    @Tool(description = "Download resource from the url")
+    public String doDownload(@ToolParam(description = "The url of the download resource") String url,
+                             @ToolParam(description = "The resource of name") String fileName){
         String fileDir = FileConstant.FILE_SAVE_DIR + File.separator + "download";
         String filePath = fileDir + File.separator + fileName;
         try {
@@ -23,9 +23,9 @@ public class ResourceDownloadTool {
             FileUtil.mkdir(fileDir);
             // 使用 downloadFile 方法下载资源
             HttpUtil.downloadFile(url, new File(filePath));
-            return "资源下载成功，保存路径：" + filePath;
+            return "Download resource successfully to: " + filePath;
         } catch (Exception e) {
-            return "资源下载失败：" + e.getMessage();
+            return "Fail to download resource: " + e.getMessage();
         }
     }
 

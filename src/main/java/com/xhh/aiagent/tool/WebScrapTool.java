@@ -10,13 +10,13 @@ import org.springframework.ai.tool.annotation.ToolParam;
  */
 public class WebScrapTool {
 
-    @Tool(description = "抓取网页内容")
-    public String doScrap(@ToolParam(description = "需要抓取网页的 url") String url) {
+    @Tool(description = "Scraping content from a web page")
+    public String doScrap(@ToolParam(description = "The url needs to scrap content") String url) {
         try {
             Document document = Jsoup.connect(url).get();
             return document.html();
         } catch (Exception e) {
-            return "网页抓取失败：" + e.getMessage();
+            return "Fail to scrap content：" + e.getMessage();
         }
     }
 

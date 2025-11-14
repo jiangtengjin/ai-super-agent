@@ -24,8 +24,8 @@ public class WebSearchTool {
         this.apiKey = apiKey;
     }
 
-    @Tool(description = "从网络上搜索内容")
-    public String searchContentFromWeb(@ToolParam(description = "搜索的关键词") String keyWord) {
+    @Tool(description = "Search content from web")
+    public String searchContentFromWeb(@ToolParam(description = "The content needs to search") String keyWord) {
         // 准备请求参数
         Map<String, Object> param = new HashMap<>();
         param.put(WebSearchConstant.PARAM_ENGINE, WebSearchConstant.PARAM_ENGINE_VALUE);
@@ -46,7 +46,7 @@ public class WebSearchTool {
             }).collect(Collectors.joining(","));
             return result;
         } catch (Exception e) {
-            return "网络搜索失败：" + e.getMessage();
+            return "Fail to search content：" + e.getMessage();
         }
     }
 

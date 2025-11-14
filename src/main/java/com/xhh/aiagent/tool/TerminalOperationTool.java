@@ -9,8 +9,8 @@ import java.io.InputStreamReader;
 
 public class TerminalOperationTool {
 
-    @Tool(description = "在终端上执行命令")
-    public String executeTerminalCommand(@ToolParam(description = "需要在终端上执行的命令") String command) {
+    @Tool(description = "Execute command on terminal")
+    public String executeTerminalCommand(@ToolParam(description = "The command needs to execute") String command) {
         StringBuilder output = new StringBuilder();
         try {
 //            Process process = Runtime.getRuntime().exec(command);
@@ -24,10 +24,10 @@ public class TerminalOperationTool {
             }
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                output.append("命令执行失败，错误码: ").append(exitCode);
+                output.append("Fail to execute command, exit code: ").append(exitCode);
             }
         } catch (IOException | InterruptedException e) {
-            output.append("执行失败的命令: ").append(e.getMessage());
+            output.append("Fail to execute command: ").append(e.getMessage());
         }
         return output.toString();
     }

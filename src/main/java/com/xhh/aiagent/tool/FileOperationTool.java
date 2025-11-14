@@ -15,27 +15,27 @@ public class FileOperationTool {
 
     private final String FILE_DIR = FileConstant.FILE_SAVE_DIR + File.separator + "file";
 
-    @Tool(description = "读取文件内容")
-    public String readFile(@ToolParam(description = "需要读取内容的文件名") String fileName) {
+    @Tool(description = "Read the file content")
+    public String readFile(@ToolParam(description = "The file name of the content that needs to be read") String fileName) {
         String filePath = FILE_DIR + File.separator + fileName;
         try {
             return FileUtil.readUtf8String(filePath);
         } catch (IORuntimeException e) {
-            return "文件读取失败：" + e.getMessage();
+            return "Fail to read file：" + e.getMessage();
         }
     }
 
-    @Tool(description = "写入文件")
-    public String writeFile(@ToolParam(description = "需要写入内容的文件名") String fileName,
-                            @ToolParam(description = "需要写入的内容") String content) {
+    @Tool(description = "Write file")
+    public String writeFile(@ToolParam(description = "The file name that needs to be written") String fileName,
+                            @ToolParam(description = "The content that needs to be written") String content) {
         String filePath = FILE_DIR + File.separator + fileName;
         try {
             // 创建目录
             FileUtil.mkdir(FILE_DIR);
             FileUtil.writeUtf8String(content, filePath);
-            return "文件成功写入：" + filePath;
+            return "Write file successfully to: " + filePath;
         } catch (IORuntimeException e) {
-            return "文件写入失败：" + e.getMessage();
+            return "Fail to write file：" + e.getMessage();
         }
     }
 
