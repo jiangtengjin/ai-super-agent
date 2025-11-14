@@ -81,6 +81,20 @@
             <artifactId>jsoup</artifactId>
             <version>1.19.1</version>
         </dependency>
+        <!-- iText pdf 生成工具-->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itext-core</artifactId>
+            <version>9.1.0</version>
+            <type>pom</type>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.itextpdf/font-asian -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>font-asian</artifactId>
+            <version>9.1.0</version>
+            <scope>test</scope>
+        </dependency>
 
         <!-- ELT - markdown 文件读取组件 -->
         <dependency>
