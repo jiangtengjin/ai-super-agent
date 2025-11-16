@@ -95,7 +95,11 @@
             <version>9.1.0</version>
             <scope>test</scope>
         </dependency>
-
+        <!-- SpringBoot email  -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
         <!-- ELT - markdown 文件读取组件 -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
