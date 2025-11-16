@@ -4,9 +4,10 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
+### CUSTOM ###
 application-local.yml
 tmp
+mcp-servers.json
 
 ### STS ###
 .apt_generated
