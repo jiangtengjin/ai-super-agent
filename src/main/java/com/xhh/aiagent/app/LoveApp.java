@@ -172,7 +172,7 @@ public class LoveApp {
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
                 .advisors(new CustomLoggerAdvisor()) // 开启日志
-                .tools(toolCallbacks) // 使用自定义工具
+                .tools(toolCallbacks) // 使用 MCP 服务
                 .call()
                 .chatResponse();
         String result = response.getResult().getOutput().getText();
