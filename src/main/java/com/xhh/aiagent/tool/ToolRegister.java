@@ -39,6 +39,10 @@ public class ToolRegister {
         WebScrapTool webScrapTool = new WebScrapTool();
         // 网页搜索工具
         WebSearchTool webSearchTool = new WebSearchTool(apiKey);
+        // 任务终止工具
+        TerminateTool terminateTool = new TerminateTool();
+        // 向人类寻求帮助
+        AskHumanTool askHumanTool = new AskHumanTool();
         return ToolCallbacks.from(
                 qqEmailSenderTool,
                 fileOperationTool,
@@ -46,7 +50,9 @@ public class ToolRegister {
                 resourceDownloadTool,
                 terminalOperationTool,
                 webScrapTool,
-                webSearchTool
+                webSearchTool,
+                terminateTool,
+                askHumanTool
         );
     }
 
