@@ -1,7 +1,10 @@
 package com.xhh.aiagent.controller;
 
 import com.xhh.aiagent.app.LoveApp;
+import com.xhh.aiagent.manus.MyManus;
 import jakarta.annotation.Resource;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -78,6 +81,21 @@ public class AiController {
                         emitter::complete
                 );
         return emitter;
+    }
+
+    @Resource
+    private ToolCallback[] allTools;
+
+    @Resource
+    private ChatModel dashscopeChatModel;
+
+    /**
+     * AI 智能体接口（流式输出）
+     * 返回 SseEmitter 对象
+     */
+    @GetMapping(value = "manus/chat")
+    public SseEmitter doChatWithManus(String userMessage) {
+        return new MyManus(allTools, dashscopeChatModel).runWithStream(userMessage);
     }
 
 }

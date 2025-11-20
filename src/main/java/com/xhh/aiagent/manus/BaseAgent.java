@@ -10,9 +10,12 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 抽象基础代理类，用于管理代理状态和执行流程。
@@ -99,11 +102,89 @@ public abstract class BaseAgent {
     }
 
     /**
+     * 运行代理（流式输出）
+     *
+     * @param userPrompt    用户提示词
+     * @return              执行结果
+     */
+    public SseEmitter runWithStream (String userPrompt) {
+        SseEmitter emitter = new SseEmitter(300000L); // 超时时间 5 分钟
+        // 使用线程异步处理，避免阻塞主线程
+        CompletableFuture.runAsync(() -> {
+            try {
+                if (state != AgentState.IDLE) {
+                    emitter.send("错误：无法运行代理，因为" + state);
+                    emitter.complete();
+                    return;
+                }
+                if (StrUtil.isBlank(userPrompt)) {
+                    emitter.send("错误：无法运行代理，因为用户提示词为空");
+                    emitter.complete();
+                    return;
+                }
+            } catch (IOException e) {
+                state = AgentState.ERROR;
+                emitter.completeWithError(e);
+            }
+            // 更新状态
+            state = AgentState.RUNNING;
+            // 记录消息上下文
+            memory.add(new UserMessage(userPrompt));
+            try {
+                while (currentStep < maxSteps && state != AgentState.FINISHED) {
+                    currentStep++;
+                    log.info("Executing step {}/{}", currentStep, maxSteps);
+                    // 单步执行
+                    String stepResult = step();
+                    if (isStuck()) {
+                        handleStuckState();
+                    }
+                    stepResult = String.format("步骤 %d 结果: %s", currentStep, stepResult);
+                    emitter.send(stepResult);
+                }
+                // 判断是否超出最大步骤
+                if (currentStep >= maxSteps) {
+                    currentStep = 0;
+                    state = AgentState.FINISHED;
+                    String terminated = String.format("终止: 达到最大步骤 ({%d})", maxSteps);
+                    emitter.send(terminated);
+                }
+                // 正常完成
+                emitter.complete();
+            } catch (Exception e) {
+                state = AgentState.ERROR;
+                log.error("智能体运行失败：",e);
+                emitter.completeWithError(e);
+            } finally {
+                // 清理资源
+                cleanup();
+            }
+        });
+
+        // 设置超时和完成回调
+        emitter.onTimeout(() -> {
+            state = AgentState.ERROR;
+            cleanup();
+            log.warn("SSE connection timed out");
+        });
+
+        emitter.onCompletion(() -> {
+            if (state == AgentState.RUNNING) {
+                state = AgentState.FINISHED;
+            }
+            cleanup();
+            log.info("Dash finished, SSE connection completed");
+        });
+
+        return emitter;
+    }
+
+    /**
      * 执行单个步骤
      * 必须由子类来实现这个方法
      * @return  步骤执行结果
      */
-    public abstract String step ();
+    protected abstract String step ();
 
     /**
      * 处理卡住状态
