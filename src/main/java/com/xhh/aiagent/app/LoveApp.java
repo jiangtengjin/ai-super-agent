@@ -17,6 +17,7 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -66,18 +67,56 @@ public class LoveApp {
     }
 
     /**
+     * 对话
+     *
+     * @param message   用户提示词
+     * @param chatId    对话 id，用于隔离每个用户的对话
+     * @return          AI 的返回结果
+     */
+    public String doChat (String message, String chatId) {
+        ChatResponse chatResponse = chatClient.prompt()
+                // 系统提示词
+                .system(systemPromptResource)
+                .user(message)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+                .call()
+                .chatResponse();
+        String result = chatResponse.getResult().getOutput().getText();
+        log.info("result: {}", result);
+        return result;
+    }
+
+    /**
+     * 对话（流式输出）
+     *
+     * @param message   用户提示词
+     * @param chatId    对话 id，用于隔离每个用户的对话
+     * @return          AI 的返回结果
+     */
+    public Flux<String> doChatWithStream (String message, String chatId) {
+        return chatClient.prompt()
+                // 系统提示词
+                .system(systemPromptResource)
+                .user(message)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+                .stream()
+                .content();
+    }
+
+    /**
      * 对话（结构化输出）
      *
      * @param message   用户提示词
      * @param chatId    对话 id，用于隔离每个用户的对话
      * @return          AI 的返回结果
      */
-    public LoveReport doChat (String message, String chatId) {
+    public LoveReport doChatWithStructuredOutput (String message, String chatId) {
         LoveReport report = chatClient.prompt()
                 // 系统提示词
                 .system(systemPromptResource)
                 .user(message)
-                .advisors()
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
                 .call()
@@ -159,7 +198,7 @@ public class LoveApp {
     private ToolCallbackProvider toolCallbacks;
 
     /**
-     * 对话（使用自定义工具）
+     * 对话（使用 MCP 服务）
      *
      * @param message   用户提示词
      * @param chatId    对话 id，用于隔离每个用户的对话

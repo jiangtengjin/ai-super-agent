@@ -25,7 +25,7 @@ class LoveAppTest {
     void testChatWithReport() {
         String chatId = UUID.randomUUID().toString();
         String message = "什么是舔狗";
-        LoveApp.LoveReport report = loveApp.doChat(message, chatId);
+        LoveApp.LoveReport report = loveApp.doChatWithStructuredOutput(message, chatId);
         Assertions.assertNotNull(report);
     }
 
@@ -34,15 +34,15 @@ class LoveAppTest {
         String chatId = UUID.randomUUID().toString();
         // 第一轮
         String message = "你好，我是蒋腾进";
-        LoveApp.LoveReport report = loveApp.doChat(message, chatId);
+        LoveApp.LoveReport report = loveApp.doChatWithStructuredOutput(message, chatId);
         Assertions.assertNotNull(report);
         // 第二轮
         message = "什么是健康的爱情关系";
-        report = loveApp.doChat(message, chatId);
+        report = loveApp.doChatWithStructuredOutput(message, chatId);
         Assertions.assertNotNull(report);
         // 第三轮
         message = "我应该怎么做";
-        report = loveApp.doChat(message, chatId);
+        report = loveApp.doChatWithStructuredOutput(message, chatId);
         Assertions.assertNotNull(report);
     }
 
