@@ -3,6 +3,7 @@ package com.xhh.aiagent.manus;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatOptions;
+import com.xhh.aiagent.model.enums.AgentMessageType;
 import com.xhh.aiagent.model.enums.AgentState;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -57,7 +58,7 @@ public abstract class ToolCallAgent extends ReActAgent{
      * @return 是否需要行动， true 表示需要， false 表示不需要
      */
     @Override
-    public boolean think() {
+    protected boolean think() {
         List<Message> memory = getMemory();
         if (StrUtil.isNotBlank(getNextStepPrompt())) {
             UserMessage userMessage = new UserMessage(getNextStepPrompt());
@@ -79,12 +80,16 @@ public abstract class ToolCallAgent extends ReActAgent{
             String result = assistantMessage.getText();
             List<AssistantMessage.ToolCall> toolCalls = assistantMessage.getToolCalls();
             log.info("✨ {}'s thoughts: {}", getName(), result);
+            sendSseMessage(AgentMessageType.THOUGHTS, result);
             log.info("🛠️ {} selected {} tools to use", getName(), toolCalls.size());
+            String toolSelectionMsg = String.format("🛠️ %s 选择了 %d 个工具去使用", getName(), toolCalls.size()); // 工具选择
+            sendSseMessage(AgentMessageType.TOOL_SELECTION, toolSelectionMsg);
             String toolCallInfo = toolCalls.stream()
-                    .map(toolCall -> String.format("🧰 Tools being prepared: {%s}\n Tool arguments: {%s}",
+                    .map(toolCall -> String.format("🧰 开始解析工具: {%s}\n 工具参数: {%s}",
                             toolCall.name(), toolCall.arguments())
                     ).collect(Collectors.joining("\n"));
             log.info("tool call info: {}", toolCallInfo);
+            sendSseMessage(AgentMessageType.TOOL_CALL_INFO, toolCallInfo);
             if (toolCalls.isEmpty()) {
                 // 只有不调用工具时，才记录助手消息
                 memory.add(assistantMessage);
@@ -106,7 +111,7 @@ public abstract class ToolCallAgent extends ReActAgent{
      * @return  行动执行结果
      */
     @Override
-    public String act() {
+    protected String act() {
         // 如果没有工具调用，则返回
         if (!toolCallChatResponse.hasToolCalls()) {
             return "No content or commands to execute";
@@ -121,8 +126,7 @@ public abstract class ToolCallAgent extends ReActAgent{
         // 当前工具的调用结果
         ToolResponseMessage toolResponseMessage = (ToolResponseMessage) CollUtil.getLast(conversationHistory);
         String results = toolResponseMessage.getResponses().stream()
-                .map(response -> String.format("🎯 Tool '{%s}' completed its mission! Result: {%s}",
-                        response.name(), response.responseData())
+                .map(ToolResponseMessage.ToolResponse::responseData
                 ).collect(Collectors.joining("\n"));
         // 判断是否调用了终止工具
         boolean terminateToolCalled = toolResponseMessage.getResponses().stream()
@@ -130,7 +134,7 @@ public abstract class ToolCallAgent extends ReActAgent{
         if (terminateToolCalled) {
             setState(AgentState.FINISHED);
         }
-        log.info(results);
+        log.info("🎯 Completed current mission! Result: {}", results);
         return results;
     }
 }

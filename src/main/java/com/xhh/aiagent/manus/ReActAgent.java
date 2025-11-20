@@ -17,14 +17,14 @@ public abstract class ReActAgent extends BaseAgent{
      *
      * @return 是否需要行动， true 表示需要， false 表示不需要
      */
-    public abstract boolean think();
+    protected abstract boolean think();
 
     /**
      * 执行决定的行动
      *
      * @return  行动执行结果
      */
-    public abstract String act();
+    protected abstract String act();
 
     /**
      * 实现父类的 step 方法
@@ -33,7 +33,7 @@ public abstract class ReActAgent extends BaseAgent{
      * @return 当前步骤的执行结果
      */
     @Override
-    public String step() {
+    protected String step() {
         try {
             boolean shouldAct = think();
             if (!shouldAct) {

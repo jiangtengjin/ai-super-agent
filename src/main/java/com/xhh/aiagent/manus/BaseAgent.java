@@ -3,6 +3,7 @@ package com.xhh.aiagent.manus;
 
 import cn.hutool.core.util.StrUtil;
 import com.xhh.aiagent.exception.ManusStateException;
+import com.xhh.aiagent.model.enums.AgentMessageType;
 import com.xhh.aiagent.model.enums.AgentState;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +13,6 @@ import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -52,13 +52,16 @@ public abstract class BaseAgent {
     // 重复阈值
     private int duplicateThreshold = 2;
 
+    // SSE 对象，设置超时时间为 5 分钟
+    private SseEmitter emitter = new SseEmitter(300000L);
+
     /**
      * 运行代理
      *
-     * @param userPrompt    用户提示词
-     * @return              执行结果
+     * @param userPrompt 用户提示词
+     * @return 执行结果
      */
-    public String run (String userPrompt) {
+    public String run(String userPrompt) {
         if (state != AgentState.IDLE) {
             throw new ManusStateException("Cannot run agent from state: " + state);
         }
@@ -93,7 +96,7 @@ public abstract class BaseAgent {
             return String.join("\n", results);
         } catch (Exception e) {
             state = AgentState.ERROR;
-            log.error("Error to execute agent",e);
+            log.error("Error to execute agent", e);
             return "执行错误" + e.getMessage();
         } finally {
             // 清理资源
@@ -104,27 +107,23 @@ public abstract class BaseAgent {
     /**
      * 运行代理（流式输出）
      *
-     * @param userPrompt    用户提示词
-     * @return              执行结果
+     * @param userPrompt 用户提示词
+     * @return 执行结果
      */
-    public SseEmitter runWithStream (String userPrompt) {
-        SseEmitter emitter = new SseEmitter(300000L); // 超时时间 5 分钟
+    public SseEmitter runWithStream(String userPrompt) {
         // 使用线程异步处理，避免阻塞主线程
         CompletableFuture.runAsync(() -> {
-            try {
-                if (state != AgentState.IDLE) {
-                    emitter.send("错误：无法运行代理，因为" + state);
-                    emitter.complete();
-                    return;
-                }
-                if (StrUtil.isBlank(userPrompt)) {
-                    emitter.send("错误：无法运行代理，因为用户提示词为空");
-                    emitter.complete();
-                    return;
-                }
-            } catch (IOException e) {
-                state = AgentState.ERROR;
-                emitter.completeWithError(e);
+            if (state != AgentState.IDLE) {
+                sendSseMessage(AgentMessageType.ERROR, "错误：无法运行代理，因为" + state);
+//                    emitter.send("错误：无法运行代理，因为" + state);
+//                    emitter.complete();
+                return;
+            }
+            if (StrUtil.isBlank(userPrompt)) {
+                sendSseMessage(AgentMessageType.ERROR, "错误：无法运行代理，因为用户提示词为空");
+//                    emitter.send("错误：无法运行代理，因为用户提示词为空");
+//                    emitter.complete();
+                return;
             }
             // 更新状态
             state = AgentState.RUNNING;
@@ -133,27 +132,29 @@ public abstract class BaseAgent {
             try {
                 while (currentStep < maxSteps && state != AgentState.FINISHED) {
                     currentStep++;
-                    log.info("Executing step {}/{}", currentStep, maxSteps);
+                    log.info("执行步骤 {}/{}", currentStep, maxSteps);
                     // 单步执行
                     String stepResult = step();
                     if (isStuck()) {
                         handleStuckState();
                     }
                     stepResult = String.format("步骤 %d 结果: %s", currentStep, stepResult);
-                    emitter.send(stepResult);
+                    sendSseMessage(AgentMessageType.STEP_INFO, stepResult);
+//                    emitter.send(stepResult);
                 }
                 // 判断是否超出最大步骤
                 if (currentStep >= maxSteps) {
                     currentStep = 0;
                     state = AgentState.FINISHED;
                     String terminated = String.format("终止: 达到最大步骤 ({%d})", maxSteps);
-                    emitter.send(terminated);
+                    sendSseMessage(AgentMessageType.STEP_INFO, terminated);
+//                    emitter.send(terminated);
                 }
                 // 正常完成
                 emitter.complete();
             } catch (Exception e) {
                 state = AgentState.ERROR;
-                log.error("智能体运行失败：",e);
+                log.error("智能体运行失败：", e);
                 emitter.completeWithError(e);
             } finally {
                 // 清理资源
@@ -182,9 +183,10 @@ public abstract class BaseAgent {
     /**
      * 执行单个步骤
      * 必须由子类来实现这个方法
-     * @return  步骤执行结果
+     *
+     * @return 步骤执行结果
      */
-    protected abstract String step ();
+    protected abstract String step();
 
     /**
      * 处理卡住状态
@@ -197,6 +199,7 @@ public abstract class BaseAgent {
 
     /**
      * 检查 agent 在执行循环中是否被重复内容卡住
+     *
      * @param
      * @return
      */
@@ -229,9 +232,29 @@ public abstract class BaseAgent {
     }
 
     /**
+     * 发送 SSE 消息
+     *
+     * @param messageType 消息类型
+     * @param content     消息内容
+     */
+    protected void sendSseMessage(AgentMessageType messageType, String content) {
+        try {
+            // 创建SSE事件，包含类型和数据
+            String eventData = String.format("{\"type\":\"%s\",\"content\":\"%s\"}",
+                    messageType.name(),
+                    content.replace("\"", "\\\"")); // 转义JSON中的引号
+            emitter.send(SseEmitter.event().name("agentEvent").data(eventData));
+        } catch (Exception e) {
+            log.error("Failed to send SSE message: {}", e.getMessage());
+            // 如果发送失败，关闭连接
+            emitter.completeWithError(e);
+        }
+    }
+
+    /**
      * 清理资源
      */
-    protected void cleanup(){
+    protected void cleanup() {
         // 子类可以重写此方法来清理资源
     }
 
