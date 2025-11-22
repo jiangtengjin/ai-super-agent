@@ -1,10 +1,12 @@
 package com.xhh.aiagent.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xhh.aiagent.constant.UserConstant;
+import com.xhh.aiagent.exception.BusinessException;
 import com.xhh.aiagent.exception.ErrorCode;
 import com.xhh.aiagent.exception.ThrowUtils;
 import com.xhh.aiagent.manager.captcha.CaptchaManager;
@@ -13,13 +15,15 @@ import com.xhh.aiagent.mapper.UserMapper;
 import com.xhh.aiagent.model.request.UserLoginRequest;
 import com.xhh.aiagent.model.request.UserRegisterRequest;
 import com.xhh.aiagent.model.entity.User;
-import com.xhh.aiagent.model.vo.UserVO;
+import com.xhh.aiagent.model.vo.LoginUserVO;
 import com.xhh.aiagent.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.regex.Pattern;
+
+import static com.xhh.aiagent.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * @author 机hui难得
@@ -79,7 +83,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public UserVO login(UserLoginRequest userLoginRequest, HttpServletRequest httpServletRequest) {
+    public LoginUserVO login(UserLoginRequest userLoginRequest, HttpServletRequest httpServletRequest) {
         // 参数校验
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
@@ -102,8 +106,47 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         ThrowUtils.throwIf(!encryptPassword.equals(user.getUserPassword()), ErrorCode.PARAMS_ERROR, "密码错误");
 
         // 记录用户的登录态
-        httpServletRequest.getSession().setAttribute(UserConstant.USER_LOGIN_STATE, user);
+        httpServletRequest.getSession().setAttribute(USER_LOGIN_STATE, user);
         return user.objToVo(user);
+    }
+
+    @Override
+    public User getLoginUser(HttpServletRequest request) {
+        // 先判断是否已登录
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User currentUser = (User) userObj;
+        if (currentUser == null || currentUser.getId() == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        // 从数据库查询（追求性能的话可以注释，直接返回上述结果）
+        long userId = currentUser.getId();
+        currentUser = this.getById(userId);
+        if (currentUser == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        return currentUser;
+    }
+
+    @Override
+    public LoginUserVO getLoginUserVO(User user) {
+        if (user == null) {
+            return null;
+        }
+        LoginUserVO loginUserVO = new LoginUserVO();
+        BeanUtil.copyProperties(user, loginUserVO);
+        return loginUserVO;
+    }
+
+    @Override
+    public boolean userLogout(HttpServletRequest request) {
+        // 先判断是否已登录
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        if (userObj == null) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "未登录");
+        }
+        // 移除登录态
+        request.getSession().removeAttribute(USER_LOGIN_STATE);
+        return true;
     }
 
     /**

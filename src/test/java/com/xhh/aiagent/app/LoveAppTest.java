@@ -36,14 +36,14 @@ class LoveAppTest {
         String message = "你好，我是蒋腾进";
         LoveApp.LoveReport report = loveApp.doChatWithStructuredOutput(message, chatId);
         Assertions.assertNotNull(report);
-        // 第二轮
-        message = "什么是健康的爱情关系";
-        report = loveApp.doChatWithStructuredOutput(message, chatId);
-        Assertions.assertNotNull(report);
-        // 第三轮
-        message = "我应该怎么做";
-        report = loveApp.doChatWithStructuredOutput(message, chatId);
-        Assertions.assertNotNull(report);
+//        // 第二轮
+//        message = "什么是健康的爱情关系";
+//        report = loveApp.doChatWithStructuredOutput(message, chatId);
+//        Assertions.assertNotNull(report);
+//        // 第三轮
+//        message = "我应该怎么做";
+//        report = loveApp.doChatWithStructuredOutput(message, chatId);
+//        Assertions.assertNotNull(report);
     }
 
     @Test

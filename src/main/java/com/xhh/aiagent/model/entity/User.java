@@ -1,7 +1,7 @@
 package com.xhh.aiagent.model.entity;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.xhh.aiagent.model.vo.UserVO;
+import com.xhh.aiagent.model.vo.LoginUserVO;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -78,7 +78,7 @@ public class User implements Serializable {
      * @param user
      * @return
      */
-    public UserVO objToVo(User user) {
-        return BeanUtil.copyProperties(user, UserVO.class);
+    public LoginUserVO objToVo(User user) {
+        return BeanUtil.copyProperties(user, LoginUserVO.class);
     }
 }

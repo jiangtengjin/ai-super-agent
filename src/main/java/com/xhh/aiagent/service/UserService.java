@@ -4,7 +4,7 @@ import com.xhh.aiagent.model.request.UserLoginRequest;
 import com.xhh.aiagent.model.request.UserRegisterRequest;
 import com.xhh.aiagent.model.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.xhh.aiagent.model.vo.UserVO;
+import com.xhh.aiagent.model.vo.LoginUserVO;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
@@ -29,6 +29,32 @@ public interface UserService extends IService<User> {
      * @param httpServletRequest    httpServletRequest
      * @return 用户信息
      */
-    UserVO login(UserLoginRequest userLoginRequest, HttpServletRequest httpServletRequest);
+    LoginUserVO login(UserLoginRequest userLoginRequest, HttpServletRequest httpServletRequest);
+
+    /**
+     * 获取当前登录用户
+     *
+     * @param request
+     * @return
+     */
+    User getLoginUser(HttpServletRequest request);
+
+    /**
+     * 获取脱敏的已登录用户信息
+     *
+     * @return
+     */
+    LoginUserVO getLoginUserVO(User user);
+
+    /**
+     * 用户注销
+     *
+     * @param request
+     * @return
+     */
+    boolean userLogout(HttpServletRequest request);
+
+
+
 
 }
