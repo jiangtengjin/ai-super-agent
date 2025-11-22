@@ -1,19 +1,16 @@
-package com.xhh.aiagent.model.entity;
+package com.xhh.aiagent.model.vo;
 
-import cn.hutool.core.bean.BeanUtil;
-import com.xhh.aiagent.model.vo.UserVO;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 用户
- *
- * @TableName user
+ * 用户视图对象
  */
 @Data
-public class User implements Serializable {
+public class UserVO implements Serializable {
+
     /**
      * id
      */
@@ -24,10 +21,6 @@ public class User implements Serializable {
      */
     private String userAccount;
 
-    /**
-     * 密码
-     */
-    private String userPassword;
 
     /**
      * 用户名
@@ -59,26 +52,7 @@ public class User implements Serializable {
      */
     private Date updateTime;
 
-    /**
-     * 编辑时间
-     */
-    private Date editTime;
-
-    /**
-     * 是否删除
-     */
-    private Integer isDelete;
 
     private static final long serialVersionUID = 1L;
 
-
-    /**
-     * 将实体类转换为VO
-     *
-     * @param user
-     * @return
-     */
-    public UserVO objToVo(User user) {
-        return BeanUtil.copyProperties(user, UserVO.class);
-    }
 }

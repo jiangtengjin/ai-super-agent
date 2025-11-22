@@ -2,7 +2,7 @@ package com.xhh.aiagent.controller;
 
 import com.xhh.aiagent.common.BaseResponse;
 import com.xhh.aiagent.common.ResultUtils;
-import com.xhh.aiagent.manager.CodeMailManager;
+import com.xhh.aiagent.manager.codemail.CodeMailManager;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

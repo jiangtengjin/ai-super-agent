@@ -1,4 +1,4 @@
-package com.xhh.aiagent.manager;
+package com.xhh.aiagent.manager.codemail;
 
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.RandomUtil;

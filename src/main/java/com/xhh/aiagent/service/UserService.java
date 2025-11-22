@@ -1,8 +1,11 @@
 package com.xhh.aiagent.service;
 
-import com.xhh.aiagent.model.dto.UserRegisterDto;
+import com.xhh.aiagent.model.request.UserLoginRequest;
+import com.xhh.aiagent.model.request.UserRegisterRequest;
 import com.xhh.aiagent.model.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.xhh.aiagent.model.vo.UserVO;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * @author 机hui难得
@@ -17,6 +20,15 @@ public interface UserService extends IService<User> {
      * @param dto 请求参数对象
      * @return 用户ID
      */
-    Long register(UserRegisterDto dto);
+    Long register(UserRegisterRequest dto);
+
+    /**
+     * 用户登录
+     *
+     * @param userLoginRequest      请求参数对象
+     * @param httpServletRequest    httpServletRequest
+     * @return 用户信息
+     */
+    UserVO login(UserLoginRequest userLoginRequest, HttpServletRequest httpServletRequest);
 
 }

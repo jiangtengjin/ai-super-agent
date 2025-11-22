@@ -1,4 +1,4 @@
-package com.xhh.aiagent.model.dto;
+package com.xhh.aiagent.model.request;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -6,13 +6,15 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 /**
- * 用于接收用户注册请求参数
+ * 用于接收用户登录请求参数
  */
 @Data
 @NoArgsConstructor
-public class UserRegisterDto implements Serializable {
+public class UserLoginRequest implements Serializable {
 
-    // 账号
+    /**
+     * 账号
+     */
     private String userAccount;
 
     /**
@@ -21,18 +23,10 @@ public class UserRegisterDto implements Serializable {
     private String userPassword;
 
     /**
-     * 确认密码
+     * 图片验证码
      */
-    private String rePassword;
+    private String imageCode;
 
-    /**
-     * 邮箱验证码
-     */
-    private String code;
-
-    /**
-     * 邮箱验证码 key
-     */
     private String key;
 
     private static final long serialVersionUID = 1L;
