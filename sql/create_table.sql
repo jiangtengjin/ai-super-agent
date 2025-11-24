@@ -40,8 +40,27 @@ create table if not exists chat_history
     createTime     datetime default CURRENT_TIMESTAMP not null comment '创建时间',
     updateTime     datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
     isDelete       tinyint  default 0                 not null comment '是否删除',
-    INDEX idx_conversationId (conversationId),              -- 提升基于会话ID的查询性能
-    INDEX idx_createTime (createTime),                      -- 提升基于时间的查询性能
-    INDEX idx_appId_createTime (conversationId, createTime) -- 游标查询核心索引
+    INDEX idx_conversationId (conversationId), -- 提升基于会话ID的查询性能
+    INDEX idx_createTime (createTime),         -- 提升基于时间的查询性能
+    INDEX idx_id_createTime (id, createTime)   -- 游标查询核心索引
 ) comment '对话历史' collate = utf8mb4_unicode_ci;
 
+-- 对话表
+create table if not exists conversation
+(
+    id             bigint auto_increment comment 'id' primary key,
+    name           varchar(64)                        not null comment '对话名称',
+    conversationId varchar(64)                        not null COMMENT '会话ID',
+    userId         bigint                             not null comment '用户ID',
+    createTime     datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    updateTime     datetime default CURRENT_TIMESTAMP not null comment '更新时间',
+    editTime       datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '编辑时间',
+    isDelete       tinyint  default 0                 not null comment '是否删除',
+    INDEX idx_userId (userId),                -- 提升基于用户 ID 的查询性能
+    INDEX idx_conversationId (conversationId) -- 提升基于对话 ID 的查询性能
+
+) comment '对话历史' collate = utf8mb4_unicode_ci;
+
+-- 添加索引，用于提升游标查询的效率
+ALTER TABLE conversation
+    ADD INDEX idx_id_create (id, createTime);

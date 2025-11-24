@@ -1,8 +1,14 @@
 package com.xhh.aiagent.controller;
 
 import com.xhh.aiagent.app.LoveApp;
+import com.xhh.aiagent.exception.BusinessException;
+import com.xhh.aiagent.exception.ErrorCode;
 import com.xhh.aiagent.manus.MyManus;
+import com.xhh.aiagent.model.entity.User;
+import com.xhh.aiagent.service.ConversationService;
+import com.xhh.aiagent.service.UserService;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.http.MediaType;
@@ -24,6 +30,12 @@ public class AiController {
 
     @Resource
     private LoveApp loveApp;
+
+    @Resource
+    private UserService userService;
+
+    @Resource
+    private ConversationService conversationService;
 
     /**
      * 对话接口（同步，等 AI 回复完成再返回）
@@ -61,7 +73,11 @@ public class AiController {
      * 返回 SseEmitter 对象
      */
     @GetMapping(value = "chat_app/chat/SseEmitter")
-    public SseEmitter doChatWithSseEmitter(String userMessage, String chatId) {
+    public SseEmitter doChatWithSseEmitter(String userMessage, String chatId, HttpServletRequest httpServletRequest) {
+        User loginUser = userService.getLoginUser(httpServletRequest);
+        if (loginUser == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "用户未登录");
+        }
         // 创建一个 SseEmitter 对象
         SseEmitter emitter = new SseEmitter(180000L); // 超时时间 3分钟
         // 获取 Flux 数据流并直接订阅
@@ -80,6 +96,9 @@ public class AiController {
                         // 处理完成
                         emitter::complete
                 );
+
+        // 创建对话记录
+        conversationService.addConversation(userMessage, chatId, loginUser.getId());
         return emitter;
     }
 
