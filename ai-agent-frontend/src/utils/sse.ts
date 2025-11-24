@@ -27,6 +27,13 @@ export class SSEManager {
     })
 
     this.eventSource.addEventListener('error', () => {
+      if (this.eventSource?.readyState === EventSource.CLOSED) {
+        if (this.onCompleteCallback) {
+          this.onCompleteCallback()
+        }
+        this.close()
+        return
+      }
       if (this.onErrorCallback) {
         this.onErrorCallback(new Error('SSE connection error'))
       }

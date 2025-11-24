@@ -1,5 +1,3 @@
-import api from './index'
-
 /**
  * AI 恋爱大师 - SSE 流式对话
  */
@@ -8,7 +6,9 @@ export function chatWithSseEmitter(userMessage: string, chatId: string): EventSo
     userMessage,
     chatId
   })
-  return new EventSource(`/api/ai/chat_app/chat/SseEmitter?${params.toString()}`)
+  return new EventSource(`/api/ai/chat_app/chat/SseEmitter?${params.toString()}`, {
+    withCredentials: true
+  })
 }
 
 /**
@@ -18,6 +18,8 @@ export function chatWithManus(userMessage: string): EventSource {
   const params = new URLSearchParams({
     userMessage
   })
-  return new EventSource(`/api/ai/manus/chat?${params.toString()}`)
+  return new EventSource(`/api/ai/manus/chat?${params.toString()}`, {
+    withCredentials: true
+  })
 }
 

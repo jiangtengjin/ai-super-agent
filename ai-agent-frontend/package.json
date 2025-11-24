@@ -10,7 +10,9 @@
   "dependencies": {
     "vue": "^3.4.21",
     "vue-router": "^4.3.0",
-    "axios": "^1.6.7"
+    "axios": "^1.6.7",
+    "ant-design-vue": "^3.2.20",
+    "@ant-design/icons-vue": "^7.0.1"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
