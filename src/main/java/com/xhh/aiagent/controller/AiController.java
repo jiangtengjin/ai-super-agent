@@ -1,6 +1,9 @@
 package com.xhh.aiagent.controller;
 
+import com.xhh.aiagent.aiinterruptor.SessionManager;
 import com.xhh.aiagent.app.LoveApp;
+import com.xhh.aiagent.common.BaseResponse;
+import com.xhh.aiagent.common.ResultUtils;
 import com.xhh.aiagent.exception.BusinessException;
 import com.xhh.aiagent.exception.ErrorCode;
 import com.xhh.aiagent.manus.MyManus;
@@ -13,9 +16,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
 
@@ -36,6 +37,9 @@ public class AiController {
 
     @Resource
     private ConversationService conversationService;
+
+    @Resource
+    private SessionManager sessionManager;
 
     /**
      * 对话接口（同步，等 AI 回复完成再返回）
@@ -80,6 +84,8 @@ public class AiController {
         }
         // 创建一个 SseEmitter 对象
         SseEmitter emitter = new SseEmitter(180000L); // 超时时间 3分钟
+        // 将会话注册到管理器
+        sessionManager.registerSession(chatId, emitter);
         // 获取 Flux 数据流并直接订阅
         loveApp.doChatWithStream(userMessage, chatId)
                 .subscribe(
@@ -115,6 +121,21 @@ public class AiController {
     @GetMapping(value = "manus/chat")
     public SseEmitter doChatWithManus(String userMessage) {
         return new MyManus(allTools, dashscopeChatModel).runWithStream(userMessage);
+    }
+
+    /**
+     * 中断对话
+     *
+     * @param conversationId
+     * @return
+     */
+    @PostMapping("chat/interrupt")
+    public BaseResponse<String> interrupt(@RequestParam String conversationId) {
+        boolean interrupted = sessionManager.interrupt(conversationId);
+        if (!interrupted) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "任务不存在或已结束");
+        }
+        return ResultUtils.success("对话中断成功");
     }
 
 }
