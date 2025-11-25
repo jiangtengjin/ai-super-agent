@@ -1,6 +1,9 @@
 spring:
   application:
     name: ai-agent
+  session:
+    # session 30 天后过期
+    timeout: 2592000
   # mysql
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -13,7 +16,7 @@ spring:
       host: 192.168.179.127
       port: 6379
       ttl: 3600
-      database: 0
+      database: 1
   profiles:
     active: local
 
@@ -32,6 +35,10 @@ server:
   port: 8123
   servlet:
     context-path: /api
+    # cookie 30 天后过期
+    session:
+      cookie:
+        max-age: 2592000
 # springdoc-openapi
 springdoc:
   swagger-ui:

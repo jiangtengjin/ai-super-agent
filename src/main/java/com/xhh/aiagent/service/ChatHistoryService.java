@@ -1,7 +1,10 @@
 package com.xhh.aiagent.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xhh.aiagent.model.entity.ChatHistory;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.time.LocalDateTime;
 
 /**
 * @author 机hui难得
@@ -9,5 +12,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 * @createDate 2025-11-08 17:51:13
 */
 public interface ChatHistoryService extends IService<ChatHistory> {
+
+
+    Page<ChatHistory> listAppChatHistoryByPage(String conversationId, int pageSize, LocalDateTime lastCreateTime);
 
 }

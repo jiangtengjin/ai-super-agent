@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xhh.aiagent.model.entity.Conversation;
 import com.xhh.aiagent.model.request.ConversationQueryRequest;
+import com.xhh.aiagent.model.vo.ConversationVO;
 
 import java.time.LocalDateTime;
 
@@ -33,7 +34,16 @@ public interface ConversationService extends IService<Conversation> {
      * @param userId         用户 ID
      * @return
      */
-    Page<Conversation> getConversationByPage(int pageSize, LocalDateTime lastCreateTime, long userId);
+    Page<ConversationVO> getConversationByPage(int pageSize, LocalDateTime lastCreateTime, long userId);
+
+    /**
+     * 根据 conversationId 获取会话
+     *
+     * @param conversationId
+     * @return
+     */
+    Conversation getConversationByCId(String conversationId);
+
 
     /**
      * 构造查询包装类

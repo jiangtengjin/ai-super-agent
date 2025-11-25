@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -22,9 +23,24 @@ public class ConversationQueryRequest extends PageRequest implements Serializabl
     private String name;
 
     /**
+     * 会话ID
+     */
+    private String conversationId;
+
+    /**
      * 用户ID
      */
     private Long userId;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
 
 
     /**
