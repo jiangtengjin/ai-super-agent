@@ -29,10 +29,26 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+import { createConversationId } from '@/api/conversation'
+import { message } from 'ant-design-vue'
 
 const router = useRouter()
 
-const goToApp = (path: string) => {
+const goToApp = async (path: string) => {
+  if (path === '/love-master') {
+    try {
+      const response = await createConversationId()
+      const conversationId = response.data.data
+      if (!conversationId) {
+        throw new Error('未获取到 conversationId')
+      }
+      router.push({ name: 'LoveMaster', params: { conversationId } })
+    } catch (error) {
+      console.error('无法创建对话', error)
+      message.error('创建对话失败，请稍后再试')
+    }
+    return
+  }
   router.push(path)
 }
 </script>

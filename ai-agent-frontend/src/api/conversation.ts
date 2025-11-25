@@ -33,3 +33,7 @@ export function fetchConversationHistory(conversationId: string) {
   return api.get<ApiResponse<ChatHistoryRecord[]>>(`/conversation/${conversationId}/history`)
 }
 
+export function createConversationId() {
+  return api.get<ApiResponse<string>>('/conversation/get/conversationId')
+}
+

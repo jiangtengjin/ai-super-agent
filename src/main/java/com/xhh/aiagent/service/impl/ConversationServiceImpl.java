@@ -60,18 +60,16 @@ public class ConversationServiceImpl extends ServiceImpl<ConversationMapper, Con
         }
         Long id = conversationQueryRequest.getId();
         String name = conversationQueryRequest.getName();
-        String conversationId = conversationQueryRequest.getConversationId();
         Long userId = conversationQueryRequest.getUserId();
         LocalDateTime lastCreateTime = conversationQueryRequest.getLastCreateTime();
         String sortField = conversationQueryRequest.getSortField();
         // 拼接查询条件
-        queryWrapper.eq("id", id)
-                .like("name", name)
-                .eq("conversationId", conversationId)
+        queryWrapper.eq(id != null, "id", id)
+                .like(StrUtil.isNotBlank(name),"name", name)
                 .eq("userId", userId);
         // 游标查询逻辑
         if (lastCreateTime != null) {
-            queryWrapper.lt("updateTime", lastCreateTime);
+            queryWrapper.lt("createTime", lastCreateTime);
         }
         // 排序
         if (StrUtil.isNotBlank(sortField)) {

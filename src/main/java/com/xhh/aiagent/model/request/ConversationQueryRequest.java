@@ -22,11 +22,6 @@ public class ConversationQueryRequest extends PageRequest implements Serializabl
     private String name;
 
     /**
-     * 会话ID
-     */
-    private String conversationId;
-
-    /**
      * 用户ID
      */
     private Long userId;

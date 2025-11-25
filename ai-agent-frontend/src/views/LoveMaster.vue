@@ -130,7 +130,7 @@
                 <a-button
                   type="primary"
                   :disabled="!inputMessage.trim() || isStreaming"
-                  @click="sendMessage"
+                  @click="sendMessage()"
                   class="send-btn"
                   shape="round"
                 >
@@ -183,10 +183,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick, watch, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { message as messageApi } from 'ant-design-vue'
 import { PlusOutlined, MenuFoldOutlined, MenuUnfoldOutlined, SendOutlined, DownOutlined, UpOutlined } from '@ant-design/icons-vue'
 import { chatWithSseEmitter } from '@/api/ai'
-import { fetchConversationHistory, fetchConversationList } from '@/api/conversation'
+import { fetchConversationHistory, fetchConversationList, createConversationId } from '@/api/conversation'
 import type { ConversationRecord, ChatHistoryRecord } from '@/api/conversation'
 import { SSEManager } from '@/utils/sse'
 
@@ -199,6 +200,9 @@ interface MessageItem {
 interface ConversationSummary extends ConversationRecord {
   local?: boolean
 }
+
+const router = useRouter()
+const route = useRoute()
 
 const messages = ref<MessageItem[]>([])
 const inputMessage = ref('')
@@ -227,7 +231,35 @@ const composerMode = computed(() => {
 
 let sseManager: SSEManager | null = null
 
-const generateChatId = () => `chat_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
+const getRouteConversationId = (): string => {
+  const param = route.params.conversationId
+  if (Array.isArray(param)) {
+    return param[0] || ''
+  }
+  return typeof param === 'string' ? param : ''
+}
+
+const updateRouteConversation = (conversationId: string) => {
+  if (!conversationId) return
+  const currentRouteId = getRouteConversationId()
+  if (currentRouteId === conversationId) {
+    return
+  }
+  router.replace({
+    name: 'LoveMaster',
+    params: { conversationId },
+    query: route.query
+  })
+}
+
+const requestConversationId = async (): Promise<string> => {
+  const response = await createConversationId()
+  const conversationId = response.data.data
+  if (!conversationId) {
+    throw new Error('无法获取 conversationId')
+  }
+  return conversationId
+}
 
 const formatMessage = (content: string) =>
   content.replace(/\n/g, '<br>').replace(/ /g, '&nbsp;')
@@ -285,6 +317,7 @@ const selectConversation = async (conversation: ConversationSummary) => {
   }
   isStreaming.value = false
   currentChatId.value = conversation.conversationId
+  updateRouteConversation(conversation.conversationId)
   selectedConversation.value = conversation
   await loadConversationHistory(conversation.conversationId)
 }
@@ -309,6 +342,13 @@ const fetchConversations = async () => {
 
 const refreshConversations = () => {
   fetchConversations()
+}
+
+const syncConversationFromRoute = () => {
+  const routeConversationId = getRouteConversationId()
+  if (routeConversationId) {
+    currentChatId.value = routeConversationId
+  }
 }
 
 const injectLocalConversation = (name: string, conversationId: string) => {
@@ -336,7 +376,8 @@ const sendMessage = async (presetMessage?: string) => {
   }
 
   if (!currentChatId.value) {
-    currentChatId.value = generateChatId()
+    currentChatId.value = await requestConversationId()
+    updateRouteConversation(currentChatId.value)
   }
 
   if (!selectedConversation.value || selectedConversation.value.conversationId !== currentChatId.value) {
@@ -400,7 +441,7 @@ const sendMessage = async (presetMessage?: string) => {
   sseManager.connect(eventSource)
 }
 
-const handleStartConversation = () => {
+const handleStartConversation = async () => {
   if (!newChatPrompt.value.trim()) {
     return
   }
@@ -410,13 +451,20 @@ const handleStartConversation = () => {
   }
   isStreaming.value = false
   messages.value = []
-  currentChatId.value = generateChatId()
-  const prompt = newChatPrompt.value.trim()
-  newChatPrompt.value = ''
-  showNewChatModal.value = false
-  composerPinned.value = false
-  composerCollapsed.value = false
-  sendMessage(prompt)
+  try {
+    const conversationId = await requestConversationId()
+    currentChatId.value = conversationId
+    updateRouteConversation(conversationId)
+    const prompt = newChatPrompt.value.trim()
+    newChatPrompt.value = ''
+    showNewChatModal.value = false
+    composerPinned.value = false
+    composerCollapsed.value = false
+    await sendMessage(prompt)
+  } catch (error) {
+    console.error('无法创建新的对话', error)
+    messageApi.error('创建对话失败，请稍后再试')
+  }
 }
 
 const openNewChatModal = () => {
@@ -469,7 +517,15 @@ watch(showNewChatModal, (open) => {
   }
 })
 
+watch(
+  () => route.params.conversationId,
+  () => {
+    syncConversationFromRoute()
+  }
+)
+
 onMounted(() => {
+  syncConversationFromRoute()
   fetchConversations()
   nextTick(() => {
     inputRef.value?.focus()
