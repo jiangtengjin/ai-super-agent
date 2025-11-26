@@ -6,6 +6,8 @@ import com.xhh.aiagent.exception.BusinessException;
 import com.xhh.aiagent.exception.ErrorCode;
 import com.xhh.aiagent.manager.captcha.CaptchaManager;
 import com.xhh.aiagent.manager.captcha.model.vo.ImageCodeVO;
+import com.xhh.aiagent.ratelimiter.annotation.RateLimit;
+import com.xhh.aiagent.ratelimiter.enums.RateLimitType;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +24,7 @@ public class CaptchaController {
     @Resource
     private CaptchaManager captchaManager;
 
+    @RateLimit(limitType = RateLimitType.USER, rate = 5, interval = 60)
     @GetMapping("/image/code")
     public BaseResponse<ImageCodeVO> getImageCode() {
         try {

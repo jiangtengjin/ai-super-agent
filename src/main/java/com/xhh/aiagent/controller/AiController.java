@@ -8,6 +8,8 @@ import com.xhh.aiagent.exception.BusinessException;
 import com.xhh.aiagent.exception.ErrorCode;
 import com.xhh.aiagent.manus.MyManus;
 import com.xhh.aiagent.model.entity.User;
+import com.xhh.aiagent.ratelimiter.annotation.RateLimit;
+import com.xhh.aiagent.ratelimiter.enums.RateLimitType;
 import com.xhh.aiagent.service.ConversationService;
 import com.xhh.aiagent.service.UserService;
 import jakarta.annotation.Resource;
@@ -76,6 +78,7 @@ public class AiController {
      * 对话接口（流式输出）
      * 返回 SseEmitter 对象
      */
+    @RateLimit(limitType = RateLimitType.USER, rate = 5, interval = 60, message = "Ai 对话请求过于频繁，请稍后再试")
     @GetMapping(value = "chat_app/chat/SseEmitter")
     public SseEmitter doChatWithSseEmitter(String userMessage, String chatId, HttpServletRequest httpServletRequest) {
         User loginUser = userService.getLoginUser(httpServletRequest);
@@ -118,6 +121,7 @@ public class AiController {
      * AI 智能体接口（流式输出）
      * 返回 SseEmitter 对象
      */
+    @RateLimit(limitType = RateLimitType.USER, rate = 5, interval = 180, message = "Ai 智能体请求过于频繁，请稍后再试")
     @GetMapping(value = "manus/chat")
     public SseEmitter doChatWithManus(String userMessage) {
         return new MyManus(allTools, dashscopeChatModel).runWithStream(userMessage);

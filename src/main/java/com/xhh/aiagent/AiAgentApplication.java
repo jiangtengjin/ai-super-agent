@@ -8,8 +8,10 @@ import org.springframework.ai.autoconfigure.vectorstore.pgvector.PgVectorStoreAu
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 @MapperScan("com.xhh.aiagent.mapper")
+@EnableAspectJAutoProxy(exposeProxy = true)
 @SpringBootApplication(exclude = PgVectorStoreAutoConfiguration.class)
 public class AiAgentApplication {
 

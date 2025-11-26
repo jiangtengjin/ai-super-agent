@@ -24,11 +24,12 @@ public class LoginInterceptor implements HandlerInterceptor {
      * 白名单
      */
     private static final List<String> EXCLUDE_PATH = Arrays.asList(
-            "api/user/**",
-            "api/code/**",
-            "api/captcha/image/code",
-            "/swagger-ui/**",
-            "/v3/api-docs/**"
+            "/api/user/**",
+            "/api/code/**",
+            "/api/captcha/image/code",
+            "/api/swagger-ui/**",
+            "/api/v3/api-docs/**",
+            "/api/doc.html"
     );
 
     @Override
