@@ -45,6 +45,13 @@ public class ChatHistoryServiceImpl extends ServiceImpl<ChatHistoryMapper, ChatH
         // 查询数据
         return this.page(Page.of(1, pageSize), queryWrapper);
     }
+
+    @Override
+    public void deleteByConversationId(String conversationId) {
+        LambdaQueryWrapper<ChatHistory> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ChatHistory::getConversationId, conversationId);
+        this.remove(queryWrapper);
+    }
 }
 
 

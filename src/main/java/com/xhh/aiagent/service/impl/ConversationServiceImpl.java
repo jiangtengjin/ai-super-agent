@@ -6,14 +6,19 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xhh.aiagent.exception.BusinessException;
 import com.xhh.aiagent.exception.ErrorCode;
 import com.xhh.aiagent.exception.ThrowUtils;
 import com.xhh.aiagent.mapper.ConversationMapper;
 import com.xhh.aiagent.model.entity.Conversation;
 import com.xhh.aiagent.model.request.ConversationQueryRequest;
 import com.xhh.aiagent.model.vo.ConversationVO;
+import com.xhh.aiagent.service.ChatHistoryService;
 import com.xhh.aiagent.service.ConversationService;
+import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,8 +30,12 @@ import java.util.stream.Collectors;
  * @createDate 2025-11-22 17:33:17
  */
 @Service
+@Slf4j
 public class ConversationServiceImpl extends ServiceImpl<ConversationMapper, Conversation>
         implements ConversationService {
+
+    @Resource
+    private ChatHistoryService chatHistoryService;
 
     @Override
     public Long addConversation(String userMessage, String conversationId, Long userId) {
@@ -73,6 +82,32 @@ public class ConversationServiceImpl extends ServiceImpl<ConversationMapper, Con
         queryWrapper.eq(Conversation::getConversationId, conversationId);
         Conversation conversation = this.getOne(queryWrapper);
         return conversation;
+    }
+
+    @Override
+    public void deleteConversation(long id) {
+        // 获取对话
+        Conversation conversation = this.getById(id);
+        ThrowUtils.throwIf(conversation == null, ErrorCode.NOT_FOUND_ERROR);
+        String conversationId = conversation.getConversationId();
+        // 开启事务
+        TransactionTemplate transactionTemplate = new TransactionTemplate();
+        transactionTemplate.execute(status -> {
+            try {
+                // 删除对话记录
+                this.removeById(id);
+                log.info("删除对话 {} 成功", id);
+                // 根据对话 id 删除对话历史
+                chatHistoryService.deleteByConversationId(conversationId);
+                log.info("删除对话历史 {} 成功", conversationId);
+            } catch (Exception e) {
+                log.error("删除对话失败，对话记录 ID {} -> 对话 ID {}", id, conversationId, e);
+                // 执行失败，回滚
+                status.setRollbackOnly();
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+            }
+            return true;
+        });
     }
 
     @Override

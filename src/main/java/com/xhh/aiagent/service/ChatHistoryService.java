@@ -16,4 +16,10 @@ public interface ChatHistoryService extends IService<ChatHistory> {
 
     Page<ChatHistory> listAppChatHistoryByPage(String conversationId, int pageSize, LocalDateTime lastCreateTime);
 
+    /**
+     * 根据会话 ID 删除对话历史
+     *
+     * @param conversationId
+     */
+    void deleteByConversationId(String conversationId);
 }

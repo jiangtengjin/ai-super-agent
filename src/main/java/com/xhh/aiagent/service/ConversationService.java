@@ -44,6 +44,13 @@ public interface ConversationService extends IService<Conversation> {
      */
     Conversation getConversationByCId(String conversationId);
 
+    /**
+     * 删除对话
+     *
+     * @param id    对话 id
+     */
+    void
+    deleteConversation(long id);
 
     /**
      * 构造查询包装类
